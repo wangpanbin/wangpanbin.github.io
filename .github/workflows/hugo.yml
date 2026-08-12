@@ -65,7 +65,16 @@ jobs:
         run: hugo --gc --minify
 
       - name: Configure Pages
+        # enablement: true is required on first deploy for a user site
+        # (<username>.github.io). Without it, the action succeeds but
+        # `pages/builds/latest` returns 404 and the site never serves.
+        # This is the fix documented across multiple GitHub community
+        # threads (actions/deploy-pages issues #21, #373, #406) for
+        # repos whose Pages service hasn't been activated yet. Safe to
+        # leave on — it's a no-op once Pages is already enabled.
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
