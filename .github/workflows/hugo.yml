@@ -1,0 +1,84 @@
+name: Deploy Hugo site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel a previous in-flight deploy when a new commit lands.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  DART_SASS_VERSION: "1.83.0"
+  HUGO_VERSION: "0.164.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dart Sass
+        # Style template at layouts/_partials/head/style.html hardcodes
+        # toCSS(transpiler: "dartsass"). Hugo 0.153.2+ (extended or not) does
+        # NOT bundle a Sass compiler — we MUST install one or the build errors
+        # with "failed to transpile SCSS: sass not found".
+        # We use the GitHub release tarball instead of snap, because the snap
+        # daemon is unreliable in CI runners.
+        run: |
+          curl -sLJO "https://github.com/sass/dart-sass/releases/download/${DART_SASS_VERSION}/dart-sass-${DART_SASS_VERSION}-linux-x64.tar.gz"
+          mkdir -p "$HOME/.local"
+          tar -C "$HOME/.local" -xf "dart-sass-${DART_SASS_VERSION}-linux-x64.tar.gz"
+          rm "dart-sass-${DART_SASS_VERSION}-linux-x64.tar.gz"
+          echo "$HOME/.local/dart-sass" >> "$GITHUB_PATH"
+
+      - name: Install Hugo
+        run: |
+          curl -sLJO "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          mkdir -p "$HOME/.local/hugo"
+          tar -C "$HOME/.local/hugo" -xf "hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          rm "hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+          echo "$HOME/.local/hugo" >> "$GITHUB_PATH"
+
+      - name: Verify toolchain
+        run: |
+          sass --version
+          hugo version
+
+      - name: Checkout
+        # fetch-depth: 0 is required because hugo.toml has enableGitInfo = true
+        # and the theme's templates read .Lastmod (article footer, RSS,
+        # OpenGraph). Shallow clones would collapse all timestamps.
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        # baseURL is hardcoded in hugo.toml to avoid double-slash bugs that
+        # happen when concatenating configure-pages' base_url (already has
+        # trailing slash) with a manually appended "/".
+        run: hugo --gc --minify
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
