@@ -1,0 +1,20 @@
+{{- /*
+    Site override of the theme's _partials/head/style.html.
+
+    The bundled hugo.exe is the "withdeploy" edition, which has no LibSass, so the
+    theme's default `toCSS` (transpiler defaults to libsass) fails. Dart Sass is
+    installed via npm (`npm install -g sass`) and selected explicitly here.
+
+    LibSass was deprecated in Hugo 0.153.0, so this is the forward-looking path
+    regardless of which binary edition is in use.
+
+    The theme's SCSS still uses @import, which Dart Sass 1.80+ reports as deprecated;
+    silenced here because the source belongs to the vendored upstream theme.
+*/ -}}
+{{- $opts := dict
+    "transpiler" "dartsass"
+    "targetPath" "css/style.css"
+    "silenceDeprecations" (slice "import" "global-builtin" "color-functions")
+-}}
+{{- $style := resources.Get "scss/style.scss" | toCSS $opts | minify | fingerprint "sha256" -}}
+<link rel="stylesheet" href="{{ $style.RelPermalink }}">

@@ -1,0 +1,25 @@
+# Hugo build artifacts
+/public/
+/resources/
+.hugo_build.lock
+
+# Local Hugo binary — 95 MB, CI installs its own.
+hugo.exe
+*.exe
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# TS IDE config with Windows backslashes — not read by Hugo, noise on diff.
+assets/jsconfig.json
+
+# Vendored theme keeps its own .gitignore, but its demo/ is unused.
+themes/*/demo/
+themes/*/images/
+
+# Tooling cache / lock files from local builds
+*.log

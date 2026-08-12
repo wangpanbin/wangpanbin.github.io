@@ -1,0 +1,106 @@
+baseURL                = 'https://wangpanbin.github.io/'
+defaultContentLanguage = 'zh'
+# hasCJKLanguage makes .Summary / .WordCount count CJK characters correctly.
+hasCJKLanguage         = true
+locale                 = 'zh-cn'
+title                  = 'wangpanbin 的编程笔记'
+theme                  = 'hugo-theme-stack-4.0.3'
+
+# Drives .Lastmod from git commit history. Combined with actions/checkout's
+# fetch-depth: 0, this makes the "最后更新于" line in article footers and
+# RSS <lastBuildDate> accurate. Without it, .Lastmod silently never shows.
+enableGitInfo          = true
+
+# NOTE: the search JSON index is NOT configured here. The theme's template lives at
+# layouts/page/search.json and is selected by the search page's own front matter
+# (layout: search + outputs: [html, json]). Adding json to outputs.home instead
+# produces "found no layout file for json for kind home".
+
+[pagination]
+    pagerSize = 5
+
+[permalinks]
+    post = '/p/:slug/'
+    page = '/:slug/'
+
+[params]
+    # Only these sections appear on the homepage list.
+    mainSections   = ['post']
+    rssFullContent = true
+
+    [params.sidebar]
+        emoji    = '📝'
+        subtitle = '记录编程学习的踩坑与收获'
+        # avatar = 'img/avatar.png'   # place file at dev/assets/img/avatar.png
+
+    [params.article]
+        toc         = true
+        readingTime = true
+        math        = false
+
+    [params.widgets]
+        homepage = [
+            { type = 'search' },
+            { type = 'archives', params = { limit = 5 } },
+            { type = 'categories', params = { limit = 10 } },
+            { type = 'tag-cloud', params = { limit = 10 } },
+        ]
+        page = [{ type = 'toc' }]
+
+    [params.comments]
+        enabled = false
+
+    [params.colorScheme]
+        toggle  = true
+        default = 'auto'
+
+[markup]
+    [markup.goldmark]
+        [markup.goldmark.renderer]
+            # Required for raw HTML in Markdown (the theme's demo relies on this).
+            unsafe = true
+
+        [markup.goldmark.extensions]
+            [markup.goldmark.extensions.passthrough]
+                # Required for math rendering; KaTeX only sees these delimiters.
+                enable = true
+
+                [markup.goldmark.extensions.passthrough.delimiters]
+                    block  = [['\[', '\]'], ['$$', '$$']]
+                    inline = [['\(', '\)']]
+
+    [markup.tableOfContents]
+        startLevel = 2
+        endLevel   = 4
+        ordered    = true
+
+    [markup.highlight]
+        # noClasses = false is required so the theme's light/dark syntax themes apply.
+        noClasses          = false
+        codeFences         = true
+        guessSyntax        = true
+        lineNos            = true
+        lineNumbersInTable = true
+        tabWidth           = 4
+
+# Powers the "related content" block under articles.
+[related]
+    includeNewer = true
+    threshold    = 60
+    toLower      = false
+
+    [[related.indices]]
+        name   = 'tags'
+        weight = 100
+
+    [[related.indices]]
+        name   = 'categories'
+        weight = 200
+
+[[menu.social]]
+    identifier = 'github'
+    name       = 'GitHub'
+    url        = 'https://github.com/wangpanbin'
+
+    [menu.social.params]
+        icon = 'brand-github'
